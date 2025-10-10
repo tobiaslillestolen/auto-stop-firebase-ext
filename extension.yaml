@@ -51,6 +51,8 @@ roles:
     reason: Publish to the topics to trigger alerts
   - role: pubsub.subscriber
     reason: Subscribe to a topic to receive budget alerts
+  - role: monitoring.viewer
+    reason: Used to monitor Firestore usage
 
 # In the `resources` field, list each of your extension's functions, including the trigger for each function.
 resources:
@@ -72,6 +74,18 @@ resources:
       eventTrigger:
         eventType: google.pubsub.topic.publish
         resource: projects/${PROJECT_ID}/topics/${TOPIC_NAME}
+  - name: monitorFirestore
+    type: firebaseextensions.v1beta.function
+    description: >-
+      Monitors Firestore usage directly, and executes the stopping strategy if the budget threshold is exceeded.
+    properties:
+      runtime: nodejs20
+      location: ${LOCATION}
+      httpsTrigger: {} 
+
+# scheduleTrigger:
+#   schedule: every 4 minutes
+# Note: add timezone here
 
 # In the `params` field, set up your extension's user-configured parameters.
 params:
@@ -187,6 +201,40 @@ params:
         value: asia-southeast2
       - label: Montreal (northamerica-northeast1)
         value: northamerica-northeast1
+  - param: MONITOR_FIRESTORE
+    label: Monitor Firestore Usage
+    description: Monitor Firestore usage every 4 minutes to catch overages caused by Firestore eary.
+    type: select
+    options:
+      - label: Yes
+        value: true
+      - label: No
+        value: false
+    default: true
+    required: true
+  - param: MONITOR_FIRESTORE_BUDGET_ID
+    label: GCP Budget ID for Firestore Monitoring
+    description: The ID for an existing GCP budget. You can use the same budget as the one which dispatches the Pub/Sub alert, or create a new budget specifically for monitoring Firestore usage. This budget must be created in the GCP Console. You can find the ID in the budget's details page in the GCP Console.
+    type: string
+    required: false
+  - param: MONITOR_FIRESTORE_BUDGET_READ_COST
+    label: Firestore Read Cost in USD (per 1 000 000 reads)
+    description: The cost of 1 000 000 Firestore document reads in USD. This is used to estimate your Firestore costs when monitoring usage directly. Defaults to 0.06 USD which is the price in us-central1 as of publishing.
+    type: string
+    default: 0.06
+    required: false
+  - param: MONITOR_FIRESTORE_BUDGET_WRITE_COST
+    label: Firestore Write Cost in USD (per 1 000 000 writes)
+    description: The cost of 1 000 000 Firestore document writes in USD. This is used to estimate your Firestore costs when monitoring usage directly. Defaults to 0.26 USD which is the price in us-central1 as of publishing.
+    type: string
+    default: 0.26
+    required: false
+  - param: MONITOR_FIRESTORE_BUDGET_DELETE_COST
+    label: Firestore Delete Cost in USD (per 1 000 000 deletes)
+    description: The cost of 1 000 000 Firestore document deletes in USD. This is used to estimate your Firestore costs when monitoring usage directly. Defaults to 0.02 USD which is the price in us-central1 as of publishing.
+    type: string
+    default: 0.26
+    required: false
 
 lifecycleEvents:
   onInstall:
