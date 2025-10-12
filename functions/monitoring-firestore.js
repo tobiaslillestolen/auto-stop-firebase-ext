@@ -182,7 +182,10 @@ export const monitorFirestoreUsage = async () => {
         throw new Error(`Budget currency is not in USD - only budgets in USD are supported. Currency is set to ${currency ?? "undefined"}`);
     }
 
-    const budgetAmount = parseFloat(budgetData?.amount?.specifiedAmount?.units);
+    const primaryUnits = parseFloat(budgetData?.amount?.specifiedAmount?.units);
+    const nanoUnits = parseFloat(budgetData?.amount?.specifiedAmount?.nanos);
+    const budgetAmount = primaryUnits + (nanoUnits / 1_000_000_000);
+
     if (!isFinite(budgetAmount) || budgetAmount <= 0) {
         throw new Error(`Budget amount is not valid: ${budgetData?.amount?.specifiedAmount?.units}. Amount must be a positive finite number.`);
     }
