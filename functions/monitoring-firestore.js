@@ -199,7 +199,7 @@ export const monitorFirestoreUsage = async () => {
     log(`  Total Firestore Cost: $${totalCost.toFixed(2)} of $${budgetAmount.toFixed(2)} budget`);
 
     if (totalCost > budgetAmount) {
-        log(`🚨 Firestore cost has exceeded the budget of $${budgetAmount}. Consider increasing your budget or reducing Firestore usage.`);
+        log(`🚨 Firestore cost has exceeded the budget of $${budgetAmount}. Executing disable strategy!`);
         // TODO: Trigger extension and disable services / remove billing account
     }
 
