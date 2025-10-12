@@ -15,7 +15,7 @@ const monitoringClient = new MetricServiceClient();
 // we might want to publish this funcitonality as a firebase extension
 // or an upgrade to the existing auto-stop-firebase-ext extension
 // 1. support multiple databases [TESTED - WORKS]
-// 2. support enterprise edidtion [Should work - test]
+// 2. support enterprise edition [Should work - test]
 // 3. Add TTL deletion detection https://cloud.google.com/firestore/native/docs/understand-performance-monitoring#ttl_metrics [Should work - test]
 //
 // NOTE: As free tier is per day, and relatively low we just ignore it. Though it should
@@ -25,6 +25,12 @@ const monitoringClient = new MetricServiceClient();
 
 
 export const monitorFirestoreUsage = async () => {
+    // TODO: Is there a way to not deploy the function if we don't want it?
+    if (process.env.MONITOR_FIRESTORE !== "true") {
+        log("Firestore monitoring is disabled - exiting");
+        return;
+    }
+
     log("Checking for Firestore overage at", new Date().toISOString(), "Function v 1.1.1");
 
     const projectId = JSON.parse(process.env.FIREBASE_CONFIG).projectId;
@@ -114,7 +120,6 @@ export const monitorFirestoreUsage = async () => {
     const defaultWriteCost = 0.26; // USD per million writes
     const defaultDeleteCost = 0.26; // USD per million deletes
 
-    // Validate prices
     const validatePrice = (field, price) => {
         if (!isFinite(price)) return "Invalid price - NaN/Infinite";
         if (price < 0) return "Invalid price - price must be greater than 0";
@@ -174,12 +179,12 @@ export const monitorFirestoreUsage = async () => {
 
     const currency = budgetData?.amount?.specifiedAmount?.currencyCode;
     if (currency !== "USD") {
-        throw new Error(`Budget currency is not in USD - only budgets in USD are supported. Currency is set to ${currency}`);
+        throw new Error(`Budget currency is not in USD - only budgets in USD are supported. Currency is set to ${currency ?? "undefined"}`);
     }
 
     const budgetAmount = parseFloat(budgetData?.amount?.specifiedAmount?.units);
     if (!isFinite(budgetAmount) || budgetAmount <= 0) {
-        throw new Error(`Budget amount is not valid: ${budgetData?.amount?.specifiedAmount?.units}`);
+        throw new Error(`Budget amount is not valid: ${budgetData?.amount?.specifiedAmount?.units}. Amount must be a positive finite number.`);
     }
 
     const readCostTotal = (readOps / 1_000_000) * readCost;
@@ -200,5 +205,5 @@ export const monitorFirestoreUsage = async () => {
 
     // TODO: Remove this - temporary for testing while function is HTTPS
     log(JSON.stringify({ readOps, writeOps, deleteOps, ttlDeleteOps, budgetData, readCost, writeCost, deleteCost, totalCost, budgetAmount }, null, 2));
-    return { readOps, writeOps, deleteOps, ttlDeleteOps, budgetData, billingAccountName };
+    return { readOps, writeOps, deleteOps, ttlDeleteOps, budgetData, billingAccountName, readCost, writeCost, deleteCost, totalCost, budgetAmount };
 };
