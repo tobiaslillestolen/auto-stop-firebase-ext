@@ -14,19 +14,14 @@ const monitoringClient = new MetricServiceClient();
 // TODO: Keep up to date with issue here: https://github.com/deep-rock-development/auto-stop-firebase-ext/issues/21
 // we might want to publish this funcitonality as a firebase extension
 // or an upgrade to the existing auto-stop-firebase-ext extension
-// 1. Create test suite / control panel
-// 2. support multiple databases [TESTED - WORKS]
-// 3. support enterprise edidtion [Should work - test]
-// 4. Add TTL deletion detection https://cloud.google.com/firestore/native/docs/understand-performance-monitoring#ttl_metrics [Should work - test]
+// 1. support multiple databases [TESTED - WORKS]
+// 2. support enterprise edidtion [Should work - test]
+// 3. Add TTL deletion detection https://cloud.google.com/firestore/native/docs/understand-performance-monitoring#ttl_metrics [Should work - test]
 //
 // NOTE: As free tier is per day, and relatively low we just ignore it. Though it should
 // be noted that the budget shouldn't be set to an extremely low value.
-//
+
 // Metrics for Firestore: https://cloud.google.com/monitoring/api/metrics_gcp_d_h#gcp-firestore
-// Tests should confirm that the following cases are included in
-// the monitoring:
-// - Security rule reads
-// - NOOPS (queries that return no results, failed writes etc)
 
 
 export const monitorFirestoreUsage = async () => {
@@ -36,8 +31,8 @@ export const monitorFirestoreUsage = async () => {
 
     // NOTE: Google uses Pacific Time to calculate the billing 
     // period for all customers, regardless of their time zone.
-    // The time zone is set in extension.yaml
-    //
+    // The time zone of the function can be set in extension.yaml
+
     // TODO: Remove moment-timezone dependency? We could perhaps
     // rely on setting the tz and using native Date functions?
     const startOfMonthTs = moment()
@@ -45,13 +40,12 @@ export const monitorFirestoreUsage = async () => {
         .startOf('month')
         .unix();
 
-    // TODO: Change this to startOfMonthTs, currently set to 10 min
     const createRequest = metricType => ({
         name: monitoringClient.projectPath(projectId),
         filter: `metric.type="${metricType}"`,
         interval: {
             startTime: {
-                seconds: moment().subtract(600, 'seconds').unix(), // startOfMonthTs,
+                seconds: startOfMonthTs,
             },
             endTime: {
                 seconds: moment().unix(),
@@ -68,13 +62,15 @@ export const monitorFirestoreUsage = async () => {
     const writeRequest = createRequest("firestore.googleapis.com/document/write_ops_count");
     const deleteRequest = createRequest("firestore.googleapis.com/document/delete_ops_count");
     const ttlDeleteRequest = createRequest("firestore.googleapis.com/document/ttl_deletion_count");
+
+    // NOTE: This works if we want to monitor hosting bandwidth
     // const hostingRequest = createRequest("firebasehosting.googleapis.com/network/sent_bytes_count");
 
     let readOps = 0;
     let writeOps = 0;
     let deleteOps = 0;
     let ttlDeleteOps = 0;
-    let readResponse, writeResponse, deleteResponse, ttlDeleteResponse, hostingResponse;
+    let readResponse, writeResponse, deleteResponse, ttlDeleteResponse; // hostingResponse;
 
     [readResponse] = await monitoringClient.listTimeSeries(readRequest);
     [writeResponse] = await monitoringClient.listTimeSeries(writeRequest);
@@ -82,7 +78,7 @@ export const monitorFirestoreUsage = async () => {
     [ttlDeleteResponse] = await monitoringClient.listTimeSeries(ttlDeleteRequest);
     // [hostingResponse] = await monitoringClient.listTimeSeries(hostingRequest);
 
-    // NOTE: There could be multiple databases - we loop through all of them
+    // NOTE: Loop through all Firestore databases in the project
 
     readResponse.forEach(db => {
         db.points.forEach(point => {
@@ -118,6 +114,7 @@ export const monitorFirestoreUsage = async () => {
     const defaultWriteCost = 0.26; // USD per million writes
     const defaultDeleteCost = 0.26; // USD per million deletes
 
+    // Validate prices
     const validatePrice = (field, price) => {
         if (!isFinite(price)) return "Invalid price - NaN/Infinite";
         if (price < 0) return "Invalid price - price must be greater than 0";
@@ -175,6 +172,33 @@ export const monitorFirestoreUsage = async () => {
         }
     });
 
-    log(JSON.stringify({ readOps, writeOps, deleteOps, ttlDeleteOps, budgetData, billingAccountName }));
+    const currency = budgetData?.amount?.specifiedAmount?.currencyCode;
+    if (currency !== "USD") {
+        throw new Error(`Budget currency is not in USD - only budgets in USD are supported. Currency is set to ${currency}`);
+    }
+
+    const budgetAmount = parseFloat(budgetData?.amount?.specifiedAmount?.units);
+    if (!isFinite(budgetAmount) || budgetAmount <= 0) {
+        throw new Error(`Budget amount is not valid: ${budgetData?.amount?.specifiedAmount?.units}`);
+    }
+
+    const readCostTotal = (readOps / 1_000_000) * readCost;
+    const writeCostTotal = (writeOps / 1_000_000) * writeCost;
+    const deleteCostTotal = ((deleteOps + ttlDeleteOps) / 1_000_000) * deleteCost;
+    const totalCost = readCostTotal + writeCostTotal + deleteCostTotal;
+
+    log(`Firestore usage for project ${projectId} since ${moment.unix(startOfMonthTs).format("YYYY-MM-DD HH:mm:ss")} (PST):`);
+    log(`  Reads: ${readOps} @ $${readCost}/million = $${readCostTotal.toFixed(2)}`);
+    log(`  Writes: ${writeOps} @ $${writeCost}/million = $${writeCostTotal.toFixed(2)}`);
+    log(`  Deletes: ${deleteOps} + TTL Deletes: ${ttlDeleteOps} @ $${deleteCost}/million = $${deleteCostTotal.toFixed(2)}`);
+    log(`  Total Firestore Cost: $${totalCost.toFixed(2)} of $${budgetAmount.toFixed(2)} budget`);
+
+    if (totalCost > budgetAmount) {
+        log(`🚨 Firestore cost has exceeded the budget of $${budgetAmount}. Consider increasing your budget or reducing Firestore usage.`);
+        // TODO: Trigger extension and disable services / remove billing account
+    }
+
+    // TODO: Remove this - temporary for testing while function is HTTPS
+    log(JSON.stringify({ readOps, writeOps, deleteOps, ttlDeleteOps, budgetData, readCost, writeCost, deleteCost, totalCost, budgetAmount }, null, 2));
     return { readOps, writeOps, deleteOps, ttlDeleteOps, budgetData, billingAccountName };
 };
