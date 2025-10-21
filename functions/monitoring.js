@@ -1,35 +1,21 @@
 import { onRequest } from "firebase-functions/v2/https";
 import { log, error } from "firebase-functions/logger";
+import { executeDisable } from "./service.js";
+import moment from "moment-timezone";
 
 import { CloudBillingClient } from "@google-cloud/billing";
 import { BudgetServiceClient } from "@google-cloud/billing-budgets";
 import { MetricServiceClient } from "@google-cloud/monitoring";
 
-import moment from "moment-timezone";
-
 const budgetClient = new BudgetServiceClient();
 const billingClient = new CloudBillingClient();
 const monitoringClient = new MetricServiceClient();
 
-// TODO: Keep up to date with issue here: https://github.com/deep-rock-development/auto-stop-firebase-ext/issues/21
-// we might want to publish this funcitonality as a firebase extension
-// or an upgrade to the existing auto-stop-firebase-ext extension
-// 1. support multiple databases [TESTED - WORKS]
-// 2. support enterprise edition [Should work - test]
-// 3. Add TTL deletion detection https://cloud.google.com/firestore/native/docs/understand-performance-monitoring#ttl_metrics [Should work - test]
-// 4. Check if we can prevent triggering the function if monitoring is disabled
-// 5. Support for hosting bandwidth [TESTED - WORKS]
-// 6. Increase concurrency for requests DONE
-//
-// NOTE: As free tier is per day, and relatively low we just ignore it. Though it should
-// be noted that the budget shouldn't be set to an extremely low value.
-
 // Metrics for Firestore: https://cloud.google.com/monitoring/api/metrics_gcp_d_h#gcp-firestore
-
 
 export const monitorUsage = async () => {
     if (process.env.MONITOR_FIRESTORE !== "true" && process.env.MONITOR_HOSTING !== "true") {
-        log("Both Firestore and Hosting monitoring are disabled - exiting");
+        log("Both Firestore and Hosting monitoring are disabled. You might want to reinstall the extension with the monitoring schedule set to NEVER to prevent unnecessary invocations of this function. This function will now exit without doing anything.");
         return;
     }
 
@@ -103,13 +89,12 @@ export const monitorUsage = async () => {
     await Promise.all(prms);
 
     if (totalCost > budgetAmount) {
-        log(`🚨 Firestore cost has exceeded the budget of $${budgetAmount}. Executing disable strategy!`);
-        // TODO: Trigger extension and disable services / remove billing account
-        return { totalCost: totalCost.toFixed(2), budgetAmount: budgetAmount.toFixed(2) };
+        log(`🚨 Firestore cost of $${totalCost.toFixed(2)} has exceeded the budget of $${budgetAmount.toFixed(2)}. Executing disable strategy!`);
+        await executeDisable();
+        log("✅ Disable strategy executed.");
+    } else {
+        log(`✅ Firestore/Hosting cost of $${totalCost.toFixed(2)} is within the budget of $${budgetAmount.toFixed(2)}.`);
     }
-
-    log(`✅ Firestore/Hosting cost of $${totalCost.toFixed(2)} is within the budget of $${budgetAmount.toFixed(2)}.`);
-    return { totalCost: totalCost.toFixed(2), budgetAmount: budgetAmount.toFixed(2) };
 };
 
 
