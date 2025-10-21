@@ -28,7 +28,6 @@ const monitoringClient = new MetricServiceClient();
 
 
 export const monitorUsage = async () => {
-    // if monitoring is disabled, there's not point in invoking the function
     if (process.env.MONITOR_FIRESTORE !== "true" && process.env.MONITOR_HOSTING !== "true") {
         log("Both Firestore and Hosting monitoring are disabled - exiting");
         return;
@@ -135,7 +134,7 @@ const fetchHostingSpend = async ({ hostingRequest }) => {
 
         price = customPrice;
     } catch (e) {
-        error(`Error with hosting bandwidth cost configuration ("${process.env.MONITOR_HOSTING_BUDGET_GB_COST}"): ${e.message}. Using default of $${defaultPrice} per GB.`);
+        error(`Error with hosting bandwidth cost configuration ("${process.env.MONITOR_HOSTING_BANDWIDTH_COST}"): ${e.message}. Using default of $${defaultPrice} per GB.`);
         price = defaultPrice;
     }
 

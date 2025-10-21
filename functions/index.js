@@ -25,19 +25,13 @@ export const stopTriggered = functions.pubsub
         console.log("ℹ️ Received budget alert message...");
         await stopServices(message);
     });
+
 /**
  * Triggered every 4 minutes to monitor Firestore usage. For
  * fast response times.
  */
-export const monitoring = functions.https.onRequest(async (req, res) => {
-    console.log("Monitoring Triggered...");
-    const result = await monitorUsage();
-    res.status(200).send(result);
-});
-
-// export const monitorFirestore = functions.pubsub
-//     .schedule("every 4 minutes")
-//     .onRun(async (context) => {
-//         console.log("ℹ️ Firestore monitor triggered...");
-//         return await monitorFirestoreUsage();
-//     });
+export const monitoring = functions.pubsub
+    .schedule(process.env.MONITORING_SCHEDULE).onRun(async () => {
+        console.log("ℹ️ Usage monitor triggered...");
+        await monitorUsage();
+    });
