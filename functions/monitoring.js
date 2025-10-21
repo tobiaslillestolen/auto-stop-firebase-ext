@@ -125,6 +125,7 @@ const fetchHostingSpend = async ({ hostingRequest }) => {
 
     let totalBytes = 0;
 
+    log(`Hosting Bandwidth usage:`);
     hostingResponse.forEach(entry => {
         let entryBytes = 0;
         entry.points.forEach(point => {
@@ -142,13 +143,12 @@ const fetchHostingSpend = async ({ hostingRequest }) => {
 
         const entryGb = entryBytes / (1024 * 1024 * 1024);
         const entryName = entry?.resource?.labels?.site_name ?? "unknown_site";
-        log(`Total bytes for ${entryName}: ${entryBytes} bytes (${entryGb.toFixed(2)} GB)`);
+        log(`  Total bytes for site ${entryName}: ${entryBytes} bytes (${entryGb.toFixed(2)} GB)`);
         totalBytes += entryBytes;
     });
 
     const totalGB = totalBytes / (1024 * 1024 * 1024);
     const totalCost = totalGB * price;
-    log(`Hosting Bandwidth usage:`);
     log(`  Total Bytes: ${totalBytes} bytes (${totalGB.toFixed(2)} GB) @ $${price}/GB = $${totalCost.toFixed(2)}`);
     return totalCost;
 };
