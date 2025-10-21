@@ -2,7 +2,7 @@
 # https://firebase.google.com/docs/extensions/reference/extension-yaml
 
 name: functions-auto-stop-billing
-version: 1.1.2
+version: 1.2.0
 specVersion: v1beta # Version of the Firebase Extensions specification
 
 # Friendly display name for your extension (~3-5 words)
@@ -247,7 +247,7 @@ params:
     required: true
   - param: MONITOR_BUDGET_ID
     label: GCP Budget ID for Firestore/Hosting Monitoring (Required if Monitoring is enabled)
-    description: The ID for an existing GCP budget. You can use the same budget as the one which dispatches the Pub/Sub alert, or create a new budget specifically for monitoring Firestore/Hosting usage. This budget must be created in the GCP Console. You can find the ID in the budget's details page in the GCP Console. The extension will trigger when the monitoring function sees usage this month which correspond to a spend of more than 100% of the budget amount.
+    description: The ID for an existing GCP budget. You can use the same budget as the one which dispatches the Pub/Sub alert, or create a new budget specifically for monitoring Firestore/Hosting usage. The budget must be created in the GCP Console. The budget must be in USD. You can find the ID in the budget's details page in the GCP Console. The extension will trigger when the monitoring function sees usage this month which correspond to a spend of more than 100% of the budget amount. Note that free quotas are not taken into account during the calculation, so set a value of a few USD (eg. 2$ not 0.01$) even if you want to stay within the free qouta.
     type: string
     required: false
   - param: MONITOR_FIRESTORE_BUDGET_READ_COST
@@ -264,7 +264,7 @@ params:
     required: false
   - param: MONITOR_FIRESTORE_BUDGET_DELETE_COST
     label: Firestore Delete Cost in USD (per 1 000 000 deletes)
-    description: The cost of 1 000 000 Firestore document deletes in USD. This is used to estimate your Firestore costs when monitoring usage directly. Defaults to 0.02 USD which is the price in us-central1 as of publishing.
+    description: The cost of 1 000 000 Firestore document deletes in USD. This is used to estimate your Firestore costs when monitoring usage directly. Defaults to 0.026 USD which is the price in us-central1 as of publishing.
     type: string
     default: 0.26
     required: false
