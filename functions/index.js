@@ -2,7 +2,7 @@
 import * as functions from "firebase-functions";
 import { initializeApp } from "firebase-admin/app";
 import { stopServices, installExtension } from "./service.js";
-import { monitorFirestoreUsage } from "./monitoring-firestore.js";
+import { monitorUsage } from "./monitoring.js";
 
 // Initialize the Firebase Admin SDK
 initializeApp();
@@ -25,14 +25,13 @@ export const stopTriggered = functions.pubsub
         console.log("ℹ️ Received budget alert message...");
         await stopServices(message);
     });
-
 /**
  * Triggered every 4 minutes to monitor Firestore usage. For
  * fast response times.
  */
-export const monitorFirestore = functions.https.onRequest(async (req, res) => {
-    console.log("ℹ️ Firestore monitor triggered...");
-    const result = await monitorFirestoreUsage();
+export const monitoring = functions.https.onRequest(async (req, res) => {
+    console.log("Monitoring Triggered...");
+    const result = await monitorUsage();
     res.status(200).send(result);
 });
 
