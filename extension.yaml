@@ -74,18 +74,15 @@ resources:
       eventTrigger:
         eventType: google.pubsub.topic.publish
         resource: projects/${PROJECT_ID}/topics/${TOPIC_NAME}
-  - name: monitorFirestore
+  - name: monitoring
     type: firebaseextensions.v1beta.function
     description: >-
       Monitors Firestore usage directly, and executes the stopping strategy if the budget threshold is exceeded.
     properties:
       runtime: nodejs20
       location: ${LOCATION}
-      httpsTrigger: {} 
-
-# scheduleTrigger:
-#   schedule: every 4 minutes
-# Note: add timezone here
+      scheduleTrigger:
+        schedule: ${MONITORING_SCHEDULE}
 
 # In the `params` field, set up your extension's user-configured parameters.
 params:
@@ -203,7 +200,7 @@ params:
         value: northamerica-northeast1
   - param: MONITOR_FIRESTORE
     label: Monitor Firestore Usage
-    description: Monitor Firestore usage every 4 minutes to catch overages caused by Firestore eary.
+    description: Monitor Firestore usage periodically to catch overages early.
     type: select
     options:
       - label: Yes
@@ -212,9 +209,45 @@ params:
         value: false
     default: true
     required: true
-  - param: MONITOR_FIRESTORE_BUDGET_ID
-    label: GCP Budget ID for Firestore Monitoring
-    description: The ID for an existing GCP budget. You can use the same budget as the one which dispatches the Pub/Sub alert, or create a new budget specifically for monitoring Firestore usage. This budget must be created in the GCP Console. You can find the ID in the budget's details page in the GCP Console.
+  - param: MONITOR_HOSTING
+    label: Monitor Firebase Hosting bandwidth
+    description: Monitor Firebase Hosting bandwidth usage periodically to catch overages early.
+    type: select
+    options:
+      - label: Yes
+        value: true
+      - label: No
+        value: false
+    default: true
+    required: true
+  - param: MONITORING_SCHEDULE
+    label: How often to monitor Firestore/Hosting usage
+    description: How often do you want to monitor the usage? More frequent checks mean quicker responses to overages, but will cause the monitoring function to run more often. If you're not planning to use the monitoring feature, set this to NEVER to avoid unnecessary function invocations.
+    type: select
+    options:
+      - label: NEVER (Disable Monitoring)
+        value: every 10 years
+      - label: every 4 minutes (recommended)
+        value: every 4 minutes
+      - label: every 10 minutes
+        value: every 10 minutes
+      - label: every 15 minutes
+        value: every 15 minutes
+      - label: every 20 minutes
+        value: every 20 minutes
+      - label: every 25 minutes
+        value: every 25 minutes
+      - label: every 30 minutes
+        value: every 30 minutes
+      - label: every 45 minutes
+        value: every 45 minutes
+      - label: every 60 minutes
+        value: every 60 minutes
+    default: every 4 minutes
+    required: true
+  - param: MONITOR_BUDGET_ID
+    label: GCP Budget ID for Firestore/Hosting Monitoring (Required if Monitoring is enabled)
+    description: The ID for an existing GCP budget. You can use the same budget as the one which dispatches the Pub/Sub alert, or create a new budget specifically for monitoring Firestore/Hosting usage. This budget must be created in the GCP Console. You can find the ID in the budget's details page in the GCP Console. The extension will trigger when the monitoring function sees usage this month which correspond to a spend of more than 100% of the budget amount.
     type: string
     required: false
   - param: MONITOR_FIRESTORE_BUDGET_READ_COST
@@ -235,6 +268,13 @@ params:
     type: string
     default: 0.26
     required: false
+  - param: MONITOR_HOSTING_BANDWIDTH_COST
+    label: Hosting Bandwidth Cost in USD (per GB)
+    description: The cost of 1 GB of Firebase Hosting bandwidth in USD. This is used to estimate your Hosting costs when monitoring usage directly. Defaults to 0.15 USD which is the price as of publishing.
+    type: string
+    default: 0.15
+    required: false
+
 
 lifecycleEvents:
   onInstall:
