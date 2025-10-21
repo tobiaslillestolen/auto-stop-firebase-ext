@@ -264,7 +264,7 @@ params:
     required: false
   - param: MONITOR_FIRESTORE_BUDGET_DELETE_COST
     label: Firestore Delete Cost in USD (per 1 000 000 deletes)
-    description: The cost of 1 000 000 Firestore document deletes in USD. This is used to estimate your Firestore costs when monitoring usage directly. Defaults to 0.026 USD which is the price in us-central1 as of publishing.
+    description: The cost of 1 000 000 Firestore document deletes in USD. This is used to estimate your Firestore costs when monitoring usage directly. Defaults to 0.26 USD which is the price in us-central1 as of publishing.
     type: string
     default: 0.26
     required: false
