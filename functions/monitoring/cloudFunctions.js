@@ -87,9 +87,9 @@ export const getCloudFunctionsCost = async (projectId, startOfMonthTs) => {
       const parsedSeconds = parseFloat(point.value.doubleValue);
 
       if (!isFinite(parsedSeconds)) {
-        throw new Error("Invalid byte count - NaN/Infinite");
+        throw new Error("Invalid memory GB-seconds - NaN/Infinite");
       } else if (parsedSeconds < 0) {
-        throw new Error("Invalid byte count - must be greater than 0");
+        throw new Error("Invalid memory GB-seconds - must be greater than 0");
       }
 
       entrySeconds += parsedSeconds;
