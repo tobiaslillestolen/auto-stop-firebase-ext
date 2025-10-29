@@ -200,13 +200,15 @@ params:
         value: northamerica-northeast1
   - param: MONITORING_ENABLED
     label: Enable periodic monitoring
-    description: Monitor Firestore and Firebase Hosting usage periodically to catch overages early.
+    description: Use the Cloud Monitoring API to periodically check Firestore, Firebase Hosting, Google Cloud Storage buckets (including Firebase Storage) and Cloud Run (including Firebase Cloud Functions gen 2) to catch overages early.
     type: select
     options:
       - label: Yes
         value: true
       - label: No
         value: false
+      - label: Test (logging only)
+        value: test
     default: true
     required: true
   - param: MONITORING_SCHEDULE
@@ -259,9 +261,9 @@ params:
     required: false
   - param: MONITOR_FIRESTORE_STD_DELETE_COST
     label: Firestore (Std) Delete cost in USD (per 1 000 000 deletes)
-    description: The cost of 1 000 000 Firestore Standard Edition document deletes in USD. This is used to estimate your Firestore costs when monitoring usage directly. Defaults to 0.90 USD which is the price in us-central1 as of publishing.
+    description: The cost of 1 000 000 Firestore Standard Edition document deletes in USD. This is used to estimate your Firestore costs when monitoring usage directly. Defaults to 0.10 USD which is the price in us-central1 as of publishing.
     type: string
-    default: 0.90
+    default: 0.10
     required: false
   - param: MONITOR_FIRESTORE_ENT_READ_UNIT_COST
     label: Firestore (Ent) Read Unit cost in USD (per 1 000 000 units)
@@ -280,6 +282,36 @@ params:
     description: The cost of 1 GB of Firebase Hosting bandwidth in USD. This is used to estimate your Hosting costs when monitoring usage directly. Defaults to 0.15 USD which is the price as of publishing.
     type: string
     default: 0.15
+    required: false
+  - param: MONITOR_STORAGE_BANDWIDTH_COST
+    label: Cloud Storage Bandwidth Cost in USD (per GB)
+    description: The cost of 1 GB of Google Cloud Storage bandwidth in USD. This is used to estimate your Storage costs when monitoring usage directly. Defaults to 0.12 USD which is the price in us-central1 as of publishing.
+    type: string
+    default: 0.12
+    required: false
+  - param: MONITOR_CLOUD_FUNCTIONS_CPU_SECOND_COST
+    label: Cloud Function (gen 2) CPU Cost in USD (per vCPU second)
+    description: The cost of 1 vCPU second of Cloud Run CPU time in USD. This is used to estimate your Cloud Functions gen 2 costs when monitoring usage directly. Defaults to 0.000024 USD which is the price in us-central1 as of publishing.
+    type: string
+    default: 0.000024
+    required: false
+  - param: MONITOR_CLOUD_FUNCTIONS_MEMORY_GB_SECOND_COST
+    label: Cloud Function (gen 2) Memory Cost in USD (per GB second)
+    description: The cost of 1 GB second of Cloud Run memory time in USD. This is used to estimate your Cloud Functions gen 2 costs when monitoring usage directly. Defaults to 0.0000025 USD which is the price in us-central1 as of publishing.
+    type: string
+    default: 0.0000025
+    required: false
+  - param: MONITOR_CLOUD_FUNCTIONS_EGRESS_BANDWIDTH_COST
+    label: Cloud Function (gen 2) Egress Bandwidth Cost in USD (per GB)
+    description: The cost of 1 GB of Cloud Functions gen 2 egress bandwidth in USD. This is used to estimate your Cloud Functions gen 2 costs when monitoring usage directly. Defaults to 0.12 USD which is the price in us-central1 as of publishing.
+    type: string
+    default: 0.12
+    required: false
+  - param: MONITOR_CLOUD_FUNCTIONS_REQUEST_COST
+    label: Cloud Function (gen 2) Request Cost in USD (per 1 000 000 requests)
+    description: The cost of 1 000 000 Cloud Functions gen 2 requests in USD. This is used to estimate your Cloud Functions gen 2 costs when monitoring usage directly. Defaults to 0.40 USD which is the price as of publishing.
+    type: string
+    default: 0.40
     required: false
 
 
