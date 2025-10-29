@@ -21,7 +21,7 @@ const getPrice = (priceName, customPrice, defaultPrice, minPrice, maxPrice) => {
             );
         } else if (customPriceNumber < minPrice) {
             throw new Error(
-                `Invalid price for ${priceName} - below minimum allowed price of $${minPrice} per gb.`,
+                `Invalid price for ${priceName} - below minimum allowed price of $${minPrice} per GB.`,
             );
         } else if (customPriceNumber > maxPrice) {
             throw new Error(
