@@ -3,7 +3,7 @@ import { MetricServiceClient } from "@google-cloud/monitoring";
 import moment from "moment-timezone";
 
 /**
- * Creates a request object for fetching time series data 
+ * Creates a request object for fetching time series data
  * from Google Cloud Monitoring API. See available metric types
  * here:
  * https://cloud.google.com/monitoring/api/metrics_gcp_d_h#gcp-firestore
@@ -14,7 +14,7 @@ import moment from "moment-timezone";
  * @returns {object} The request object for the Monitoring API.
  */
 export const createRequest = (projectId, startOfMonthTs, metricType) => ({
-    name: monitoringClient.projectPath(projectId),
+    name: getMonitoringClient().projectPath(projectId),
     filter: `metric.type="${metricType}"`,
     interval: {
         startTime: {
@@ -23,6 +23,15 @@ export const createRequest = (projectId, startOfMonthTs, metricType) => ({
         endTime: {
             seconds: moment().unix(),
         },
+    },
+    // Reduce amount of data for processing (less work on our side)
+    aggregation: {
+        alignmentPeriod: {
+            // 1 hour is the largest value which still avoids
+            // errors due to DST changes (23/25 hours)
+            seconds: 3600,
+        },
+        perSeriesAligner: "ALIGN_SUM",
     },
 });
 
