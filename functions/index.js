@@ -2,7 +2,7 @@
 import * as functions from "firebase-functions";
 import { initializeApp } from "firebase-admin/app";
 import { stopServices, installExtension } from "./service.js";
-import { monitorUsage } from "./monitoring.js";
+import { monitorUsage } from "./monitoring/monitoring.js";
 
 // Initialize the Firebase Admin SDK
 initializeApp();
