@@ -1,5 +1,5 @@
 import { createRequest, getMonitoringClient } from "./cloudMonitoring.js";
-import { log, error } from "firebase-functions/logger";
+import { log } from "firebase-functions/logger";
 import getPrice from "./getPrice.js";
 
 // NOTE: Firebase pricing page says 200k/400k but typical
