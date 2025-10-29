@@ -105,7 +105,7 @@ export const getCloudFunctionsCost = async (projectId, startOfMonthTs) => {
     memGbSecondsV2 += entrySeconds;
   });
 
-  let neworkEgreessBytesV2 = 0;
+  let networkEgressBytesV2 = 0;
   netResult[0].forEach((entry) => {
     let entryBytes = 0;
     entry.points.forEach((point) => {
@@ -131,7 +131,7 @@ export const getCloudFunctionsCost = async (projectId, startOfMonthTs) => {
       `  Network egress for ${entryName}-${networkType} (revision ${entryRevision}): ${entryBytes} bytes. (${entryGb.toFixed(2)} GB)`,
     );
 
-    neworkEgreessBytesV2 += entryBytes;
+    networkEgressBytesV2 += entryBytes;
   });
 
   let requestCount = 0;
@@ -203,7 +203,7 @@ export const getCloudFunctionsCost = async (projectId, startOfMonthTs) => {
   );
   const paidNetworkEgressBytesV2 = Math.max(
     0,
-    neworkEgreessBytesV2 - FREE_NETWORK_EGRESS_BYTES_PER_MONTH,
+    networkEgressBytesV2 - FREE_NETWORK_EGRESS_BYTES_PER_MONTH,
   );
   const paidRequestCount = Math.max(0, requestCount - FREE_REQUESTS_PER_MONTH);
 
@@ -224,7 +224,7 @@ export const getCloudFunctionsCost = async (projectId, startOfMonthTs) => {
     `  Memory: ${paidMemGbSecondsV2.toFixed(2)} paid GB-seconds @ $${memPrice}/GB-second = $${memCost.toFixed(2)}. Used ${Math.min(FREE_MEMORY_GB_SECONDS_PER_MONTH, memGbSecondsV2.toFixed(2))}/${FREE_MEMORY_GB_SECONDS_PER_MONTH} free GB-seconds`,
   );
   log(
-    `  Network Egress: ${paidNetworkEgressBytesV2.toFixed(2)} paid bytes (${paidEgressGb.toFixed(2)} GB) @ $${netPrice}/GB = $${netCost.toFixed(2)}. Used ${Math.min(FREE_NETWORK_EGRESS_BYTES_PER_MONTH, neworkEgreessBytesV2.toFixed(2))}/${FREE_NETWORK_EGRESS_BYTES_PER_MONTH} free bytes`,
+    `  Network Egress: ${paidNetworkEgressBytesV2.toFixed(2)} paid bytes (${paidEgressGb.toFixed(2)} GB) @ $${netPrice}/GB = $${netCost.toFixed(2)}. Used ${Math.min(FREE_NETWORK_EGRESS_BYTES_PER_MONTH, networkEgressBytesV2.toFixed(2))}/${FREE_NETWORK_EGRESS_BYTES_PER_MONTH} free bytes`,
   );
   log(
     `  Requests: ${paidRequestCount} paid requests (${requestMillions.toFixed(2)} million) @ $${reqPrice}/million = $${requestCost.toFixed(2)}. Used ${Math.min(FREE_REQUESTS_PER_MONTH, requestCount)}/${FREE_REQUESTS_PER_MONTH} free requests`,
