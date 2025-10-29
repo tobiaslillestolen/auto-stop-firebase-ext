@@ -272,7 +272,7 @@ params:
     default: 0.05
     required: false
   - param: MONITOR_FIRESTORE_ENT_WRITE_UNIT_COST
-    label: Firestore (Ent) Write Unit cost in USD (per 1 000 000 deletes)
+    label: Firestore (Ent) Write Unit cost in USD (per 1 000 000 units)
     description: The cost of 1 000 000 Firestore Enterprise Edition Write Units in USD. This is used to estimate your Firestore costs when monitoring usage directly. Defaults to 0.26 USD which is the price in us-central1 as of publishing.
     type: string
     default: 0.26
