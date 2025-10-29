@@ -109,7 +109,7 @@ export const getStorageCost = async (projectId, startOfMonthTs) => {
   const totalGB = billableEgressBytes / (1024 * 1024 * 1024);
   const totalCost = totalGB * price;
   log(
-    `  Total billable egress: ${egressBytesOtherRegions} bytes (${totalGB.toFixed(2)} GB) @ $${price}/GB = $${totalCost.toFixed(2)}`,
+    `  Total billable egress: ${billableEgressBytes} bytes (${totalGB.toFixed(2)} GB) @ $${price}/GB = $${totalCost.toFixed(2)}`,
   );
 
   return totalCost;
