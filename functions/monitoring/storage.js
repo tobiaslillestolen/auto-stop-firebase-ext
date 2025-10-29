@@ -73,7 +73,7 @@ export const getStorageCost = async (projectId, startOfMonthTs) => {
     const quotaRegion =
       location === "us-central1" ||
       location === "us-west1" ||
-      location === "us-eAst1";
+      location === "us-east1";
 
     if (quotaRegion) {
       egressBytesQuotaRegions += entryBytes;
