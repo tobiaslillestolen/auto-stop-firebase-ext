@@ -1,5 +1,5 @@
 import { createRequest, getMonitoringClient } from "./cloudMonitoring.js";
-import { log, error } from "firebase-functions/logger";
+import { log } from "firebase-functions/logger";
 import getPrice from "./getPrice.js";
 
 const DEFAULT_STORAGE_BANDWIDTH_COST = 0.12; // USD per GB
@@ -96,7 +96,7 @@ export const getStorageCost = async (projectId, startOfMonthTs) => {
   );
   const quotaOvershootGB = quotaOvershootBytes / (1024 * 1024 * 1024);
   log(
-    `  Egress bytes in free quota-eligible regions: ${egressBytesQuotaRegions} bytes. ${(Math.min(egressBytesQuotaRegions, FREE_BANDWIDTH_QUOTA_BYTES) / FREE_BANDWIDTH_QUOTA_BYTES).toFixed(2)}% of free quota used. Quota overshoot: ${quotaOvershootBytes} bytes (${quotaOvershootGB.toFixed(2)} GB).`,
+    `  Egress bytes in free quota-eligible regions: ${egressBytesQuotaRegions} bytes. ${((Math.min(egressBytesQuotaRegions, FREE_BANDWIDTH_QUOTA_BYTES) / FREE_BANDWIDTH_QUOTA_BYTES) * 100).toFixed(2)}% of free quota used. Quota overshoot: ${quotaOvershootBytes} bytes (${quotaOvershootGB.toFixed(2)} GB).`,
   );
 
   const egressBytesOtherRegionsGB =

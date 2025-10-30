@@ -1,5 +1,5 @@
 import { createRequest, getMonitoringClient } from "./cloudMonitoring.js";
-import { log, error } from "firebase-functions/logger";
+import { log } from "firebase-functions/logger";
 import moment from "moment-timezone";
 import getPrice from "./getPrice.js";
 
