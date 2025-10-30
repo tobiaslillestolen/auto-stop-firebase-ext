@@ -227,7 +227,7 @@ export const getCloudFunctionsCost = async (projectId, startOfMonthTs) => {
     `  Network Egress: ${paidNetworkEgressBytesV2.toFixed(2)} paid bytes (${paidEgressGb.toFixed(2)} GB) @ $${netPrice}/GB = $${netCost.toFixed(2)}. Used ${Math.min(FREE_NETWORK_EGRESS_BYTES_PER_MONTH, networkEgressBytesV2).toFixed(2)}/${FREE_NETWORK_EGRESS_BYTES_PER_MONTH} free bytes`,
   );
   log(
-    `  Requests: ${paidRequestCount} paid requests (${requestMillions.toFixed(2)} million) @ $${reqPrice}/million = $${requestCost.toFixed(2)}. Used ${Math.min(FREE_REQUESTS_PER_MONTH, requestCount).toFixed(2)}/${FREE_REQUESTS_PER_MONTH} free requests`,
+    `  Requests: ${paidRequestCount} paid requests (${requestMillions} million) @ $${reqPrice}/million = $${requestCost.toFixed(2)}. Used ${Math.min(FREE_REQUESTS_PER_MONTH, requestCount)}/${FREE_REQUESTS_PER_MONTH} free requests`,
   );
 
   const totalCost = cpuCost + memCost + netCost + requestCost;
